@@ -11,20 +11,29 @@ services:
     ports:
       - 9411:9411
   db:
-    image: mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=toor
-      - MYSQL_DATABASE=zipkin
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    image: openzipkin/zipkin-mysql
+    container_name: mysql
   frontend:
     build: ./frontend
     volumes:
       - ./frontend:/usr/src/app
+    hostname: frontend
     ports:
       - "8001:8000"
     command: "python manage.py runserver frontend:8000"
-    hostname: frontend
-  cpu-bound:
-    build: ./cpu-bound
-  io-bound:
-    build: ./io-bound
+
+
+  dependencies:
+    image: openzipkin/zipkin-dependencies
+    container_name: dependencies
+    entrypoint: crond -f
+    environment:
+      - STORAGE_TYPE=mysql
+      - MYSQL_HOST=db
+      - MYSQL_USER=zipkin
+      - MYSQL_PASS=zipkin
+      - JAVA_OPTS=-verbose:gc -Xms512m -Xmx512m
+    depends_on:
+      - db
+    restart: unless-stopped
+

@@ -21,6 +21,8 @@ services:
     ports:
       - "8001:8000"
     command: "python manage.py runserver frontend:8000"
+    links:
+      - io-bound
   io-bound:
     build: ./io-bound
     volumes:

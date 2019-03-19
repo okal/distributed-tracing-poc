@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE")
+        classpath('org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE')
     }
 }
 
@@ -12,6 +12,12 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+
+dependencyManagement {
+    imports {
+        mavenBom('org.springframework.cloud:spring-cloud-sleuth:2.1.1.RELEASE')
+    }
+}
 
 bootJar {
     baseName = 'cpu-bound'
@@ -27,5 +33,7 @@ targetCompatibility = 1.8
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.cloud:spring-cloud-starter-sleuth')
+    compile('org.springframework.cloud:spring-cloud-starter-zipkin')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }

@@ -3,8 +3,7 @@ from rest_framework.response import Response
 from requests import get
 from py_zipkin.zipkin import zipkin_span
 from tracing.transport import SimpleHTTPTransportHandler
-from py_zipkin.util import generate_random_64bit_string
-
+from tracing.utils import generate_zipkin_headers
 
 
 @api_view(['get'])
@@ -17,11 +16,8 @@ def get_results(_):
         transport_handler=SimpleHTTPTransportHandler(),
         sample_rate=100.0,
     ) as zipkin_context:
-        headers = {
-            "X-B3-TraceId": zipkin_context.zipkin_attrs.trace_id,
-            "X-B3-ParentSpanId": zipkin_context.zipkin_attrs.span_id,
-            "X-B3-SpanId": generate_random_64bit_string(),
-            "X-B3-Sampled": '1'
-        }
-        response = get("http://io-bound:3000/lookup/index", headers=headers)
-        return Response(response.json())
+        lookup_headers = generate_zipkin_headers(zipkin_context)
+        heavy_headers = generate_zipkin_headers(zipkin_context)
+        lookup_response = get("http://io-bound:3000/lookup/index", headers=lookup_headers).json()
+        heavy_response = get("http://cpu-bound:8080/result/", headers=heavy_headers).json()
+        return Response({**lookup_response, **heavy_response})

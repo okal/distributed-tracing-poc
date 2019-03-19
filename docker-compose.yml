@@ -13,6 +13,9 @@ services:
   db:
     image: openzipkin/zipkin-mysql
     container_name: mysql
+    hostname: db
+    ports:
+      - 3306:3306
   frontend:
     build: ./frontend
     volumes:
